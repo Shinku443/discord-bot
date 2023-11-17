@@ -1,0 +1,21 @@
+{
+  "name": "discord-bot",
+  "version": "1.0.0",
+  "description": "bot for discord - (keep track of cannons, and have aram queues)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@keyv/mysql": "^1.6.5",
+    "discord.js": "^14.11.0",
+    "keyv": "^4.5.2",
+    "sequelize": "^6.31.1",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "eslint": "^8.40.0"
+  }
+}
