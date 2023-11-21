@@ -17,7 +17,7 @@ client.once(Events.ClientReady, c => {
 	console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
-client.commands = new Collection();
+/*client.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -35,8 +35,8 @@ for (const folder of commandFolders) {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
 	}
-}
-client.on(Events.InteractionCreate, async interaction => {
+}*/
+/*client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isChatInputCommand()) return;
 
 	const command = interaction.client.commands.get(interaction.commandName);
@@ -44,6 +44,8 @@ client.on(Events.InteractionCreate, async interaction => {
 	if (!command) {
 		console.error(`No command matching ${interaction.commandName} was found.`);
 		return;
+	}else {
+		console.error(`wat: ${interaction.commandName} `)
 	}
 
 	try {
@@ -60,15 +62,11 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 	}
 
-});
-client.on('error', (err) => {
-	console.log(`lol: ${err}`);
-	console.log(err.message);
-});
+});*/
 
 // Log in to Discord with your client's token
 client.login(token);
-
+//const commands = new Collection();
 const sequelize = new Sequelize('database', 'user', 'password', {
 	host: 'localhost',
 	dialect: 'sqlite',
@@ -97,18 +95,31 @@ client.once(Events.ClientReady, () => {
 
 client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isChatInputCommand()) return;
-
+console.log(`commands: ${client.commands}`)
 	const { commandName } = interaction;
-
+console.log(`interaction: ${interaction}`)
 	if (commandName === 'cannon') {
-		const tagName = 'rayjon' // interaction.options.getString('name');
+		const tagName = interaction.options.getUser('username')?.username ?? 'rayjon';
+		//const tagName = commandName // interaction.options.getString('name');
 		// equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
-		const tag = await Tags.findOne({ where: { name: tagName } });
+
+
+	
+		var tag = await Tags.findOne({ where: { name: tagName } });
+		console.log(`tag: ${tag}`)
 		if (tag) {
+			console.log(`found tag!:: ${tag.cannon_count}`)
 			// equivalent to: UPDATE tags SET usage_count = usage_count + 1 WHERE name = 'tagName';
 			tag.increment('cannon_count');
-
-			return interaction.reply(`Rayjon has missed **${tag.cannon_count} cannons** since inception of bot (5/20/2023). Holy shit that's alot`);
+			//Tags.increment({cannon_count: 1}, where: {username: $tagName})
+			await Tags.update(
+				{ cannon_count: tag.cannon_count+1, },
+				{ where: { name:  tagName } },
+			  );
+			console.log(`tags...? ${tag.cannon_count}`)
+			//Tags.sync();
+			tag = await Tags.findOne({ where: { name: tagName } });
+			return interaction.reply(`${tagName} has missed **${tag.cannon_count} cannons**`);
 		//
 		}
 		else {
@@ -118,15 +129,39 @@ client.on(Events.InteractionCreate, async interaction => {
 					name: tagName,
 					cannon_count: defaultVal,
 				});
-				return interaction.reply(`Tag ${tag2.name} added:: ${tag2.cannon_count}.`);
+				return interaction.reply(`${tag2.name} has finally missed a cannon!`);
 			}
 			catch (error) {
-				console.log('lo3');
+				console.log('catching error');
 				if (error.name === 'SequelizeUniqueConstraintError') {
 					return interaction.reply('That tag already exists.');
 				}
 				return interaction.reply('Something went wrong with adding a tag.');
 			}
 		}
+	}else if (commandName === 'highscore') {
+		var maxCannon = await Tags.findOne({
+			attributes: [
+				Sequelize.fn("MAX", Sequelize.col("cannon_count"))
+			],
+			//group: ['name'],
+			raw: true,
+		})
+		const s = await Tags.findOne({
+			where: {
+			  cannon_count: Object.values(maxCannon)
+			}
+		  })
+		console.log(`tag:: ${s.name}`)
+		
+		console.log(`tag:: ${s.cannon_count}`)
+		if(s != null){
+			return interaction.reply(`${s.name} has the high score at **${s.cannon_count} cannons** since inception of bot (5/20/2023). Holy shit that's a lot`);
+			//return interaction.reply(`${s[0].name} has the high score at **${"{MAX(`cannon_count`): maxCannon}"} cannons** since inception of bot (5/20/2023). Holy shit that's alot`);
+		}
+	}
+	else {
+		console.log(`wrong name:: ${commandName}`)
 	}
 });
+console.log(`end`)

@@ -2,11 +2,11 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('cannontest')
-		.setDescription('Tracks cannons missed.'),
+		.setName(`highscore`)
+		.setDescription('Who has the most cannons missed.'),
+
 	async execute(interaction) {
-		console.log('waiting here');
 		// interaction.guild is the object representing the Guild in which the command was run
-		await interaction.reply({ content: `Cannons missed: ${interaction.guild}`, ephemeral: true});
+		await interaction.reply({ content: `Highest amount of cannons missed: ${interaction.guild}`, ephemeral: true});
 	},
 };
